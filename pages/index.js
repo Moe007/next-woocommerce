@@ -4,6 +4,7 @@ import { Inter } from "@next/font/google"
 import Layout from "@/components/layout"
 import { getProducts, priceString } from "@/utils/product"
 import ProductTile from "@/components/productTile"
+import Link from "next/link"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -21,11 +22,13 @@ export default function Home({ products }) {
 				<ul className='flex flex-wrap space-x-2'>
 					{products.map((product) => (
 						<li key={product.id} className=''>
-							<ProductTile
-								name={product.name}
-								image={product.images[0]}
-								price={priceString(product)}
-							/>
+							<Link href={`product/${product.slug}`}>
+								<ProductTile
+									name={product.name}
+									image={product.images[0]}
+									price={priceString(product)}
+								/>
+							</Link>
 						</li>
 					))}
 				</ul>

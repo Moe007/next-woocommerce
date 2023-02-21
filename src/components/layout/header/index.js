@@ -1,7 +1,11 @@
+import Link from "next/link"
+
 const Header = ({ pageTitle }) => {
 	return (
 		<header className='bg-blue-800 text-white p-2 flex justify-between'>
-			{pageTitle === "Home" ? <h1>ShoeShop</h1> : <h6>ShoeShop</h6>}
+			<Link href='/'>
+				{pageTitle === "Home" ? <h1>ShoeShop</h1> : <h6>ShoeShop</h6>}
+			</Link>
 			<div>
 				Cart: <span>0</span>
 			</div>

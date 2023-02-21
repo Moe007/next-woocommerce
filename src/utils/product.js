@@ -62,3 +62,60 @@ export const priceString = (product) => {
 	}
 	return price
 }
+
+export const findVariation = (product, selectedAttrs) => {
+	const variation =
+		selectedAttrs.length > 0
+			? product.variations.filter((variation) =>
+					selectedAttrs.every((slctAttr) =>
+						variation.attributes.some(
+							(attr) =>
+								slctAttr.id === attr.id &&
+								slctAttr.option.toLowerCase() ===
+									attr.option.toLowerCase()
+						)
+					)
+			  )[0]
+			: product.variations[0]
+	return variation
+}
+
+export const prepProductData = (product, selectedAttrs) => {
+	let { id, name, price, description, attributes, type } = product
+	let gallery = product.images
+
+	if (type === "variable") {
+		const variation = findVariation(product, selectedAttrs)
+
+		const options = variation.attributes.map((attr) => attr.option)
+		name = `${name} - (${options.join(", ")})`
+		id = variation.id
+		price = variation.price
+		description = variation.description || product.description
+		// When using a gallery for each variation
+		// gallery = [variation.image, ...variation.woo_variation_gallery_images]
+		gallery = [variation.image]
+		selectedAttrs = variation.attributes
+	}
+	return { id, name, price, description, gallery, attributes, selectedAttrs, type }
+}
+
+export const getProductAttr = async (id) => {
+	const api = setUpApiCreds()
+	try {
+		const { data: attribute } = await api.get(`products/attributes/${id}`)
+		return attribute
+	} catch (error) {
+		return error
+	}
+}
+
+export const getAttrTerms = async (id) => {
+	const api = setUpApiCreds()
+	try {
+		const { data: terms } = await api.get(`products/attributes/${id}/terms`)
+		return terms
+	} catch (error) {
+		return error
+	}
+}
