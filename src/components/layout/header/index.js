@@ -1,3 +1,4 @@
+import Cart from "@/components/cart"
 import Link from "next/link"
 
 const Header = ({ pageTitle }) => {
@@ -7,7 +8,7 @@ const Header = ({ pageTitle }) => {
 				{pageTitle === "Home" ? <h1>ShoeShop</h1> : <h6>ShoeShop</h6>}
 			</Link>
 			<div>
-				Cart: <span>0</span>
+				<Cart />
 			</div>
 		</header>
 	)

@@ -9,6 +9,7 @@ import {
 import Image from "next/image"
 import { useEffect, useState } from "react"
 import DOMPurify from "isomorphic-dompurify"
+import AddToCart from "@/components/cart/addToCart"
 
 const Product = ({ product, preparedData, selectedAttrs: attrs }) => {
 	const [selectedAttrs, setSelectedAttrs] = useState(attrs)
@@ -61,8 +62,18 @@ const Product = ({ product, preparedData, selectedAttrs: attrs }) => {
 					height={400}
 				/>
 				<p>Price: R{Number(price).toFixed(2)}</p>
-				<button>Add to Cart</button>
-
+				<AddToCart
+					productId={id.toString()}
+					variation={selectedAttrs.reduce(async (prev, cur) => {
+						const termSlug = variation.attributes
+							.find((attr) => cur.id === attr.id)
+							.options.find((opt) => opt.name === cur.option)
+						return {
+							...prev,
+							[`attribute_${cur.slug}`]: termSlug,
+						}
+					}, {})}
+				/>
 				{type === "variable"
 					? attributes.map((attr) => (
 							<div key={attr.id}>
