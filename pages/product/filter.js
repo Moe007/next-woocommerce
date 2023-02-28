@@ -6,13 +6,27 @@ import ProductTile from "@/components/productTile"
 import Link from "next/link"
 import Layout from "@/components/layout"
 import Input from "@/components/form/input"
+import { useHeader } from "@/context/HeaderContext"
+import { getCategories } from "@/utils/category"
+import { getHeaderFooterData } from "@/utils/headerFooter"
+import { decode } from "html-entities"
 
-const Filter = () => {
+const Filter = ({ headerFooter }) => {
+	const { setHeaderState } = useHeader()
+	const categories = [...headerFooter?.categories].sort((a, b) =>
+		a.name.localeCompare(b.name)
+	)
+
+	useEffect(() => {
+		setHeaderState(headerFooter)
+	}, [headerFooter, setHeaderState])
+
 	const router = useRouter()
 	const [term, setTerm] = useState("")
 	const [loading, setLoading] = useState(false)
 	const [filteredProducts, setFilteredProducts] = useState([])
 	const [filters, setFilters] = useState({
+		category: [],
 		min_price: 0,
 		max_price: 100000,
 		on_sale: false,
@@ -29,6 +43,7 @@ const Filter = () => {
 						per_page: 20,
 						search: term,
 						extra_info: true,
+						category: filters.category.join(),
 						min_price: filters.min_price,
 						max_price: filters.max_price,
 						on_sale: filters.on_sale,
@@ -44,6 +59,10 @@ const Filter = () => {
 					query: {
 						...router.query,
 						term,
+						category: filters.category.join(","),
+						min_price: filters.min_price,
+						max_price: filters.max_price,
+						on_sale: filters.on_sale ? "true" : null,
 					},
 				},
 				undefined,
@@ -60,6 +79,9 @@ const Filter = () => {
 		setTerm(router.query?.term)
 		setFilters({
 			...filters,
+			category: router.query?.category
+				? router.query?.category.split(",").map(Number)
+				: [],
 			min_price: router.query?.min_price || 0,
 			max_price: router.query?.max_price || 100000,
 			on_sale: router.query?.on_sale === "true" ? true : false,
@@ -73,6 +95,30 @@ const Filter = () => {
 			<section className='flex'>
 				<div className='flex flex-col'>
 					<h5>Filters</h5>
+					<h6>Categories</h6>
+					<ul>
+						{categories.map((cat) => (
+							<li key={cat.id}>
+								<Input
+									id={cat.id}
+									label={decode(cat.name)}
+									type='checkbox'
+									className='flex items-center justify-between'
+									checked={filters.category.includes(cat.id) ?? false}
+									onChange={(e) =>
+										setFilters({
+											...filters,
+											category: e.target.checked
+												? [...filters.category, cat.id]
+												: filters.category.filter(
+														(c) => c !== cat.id
+												  ),
+										})
+									}
+								/>
+							</li>
+						))}
+					</ul>
 					<h6>Price Filter</h6>
 					<ul>
 						<li>
@@ -144,6 +190,22 @@ const Filter = () => {
 			</section>
 		</Layout>
 	)
+}
+
+export const getStaticProps = async () => {
+	const categories = await getCategories({
+		per_page: 100,
+		hide_empty: true,
+		orderby: "name",
+		order: "asc",
+	})
+	const headerFooter = await getHeaderFooterData()
+
+	return {
+		props: {
+			headerFooter: { ...(headerFooter || {}), categories },
+		},
+	}
 }
 
 export default Filter

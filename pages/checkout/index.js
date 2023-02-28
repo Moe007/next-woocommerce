@@ -6,8 +6,17 @@ import { useCart } from "@/context/CartContext"
 import Layout from "@/components/layout"
 import CartTotals from "@/components/cart/cartTotals"
 import Notification from "@/components/notification"
+import { useHeader } from "@/context/HeaderContext"
+import { getCategories } from "@/utils/category"
+import { getHeaderFooterData } from "@/utils/headerFooter"
 
-const Checkout = () => {
+const Checkout = ({ headerFooter }) => {
+	const { setHeaderState } = useHeader()
+
+	useEffect(() => {
+		setHeaderState(headerFooter)
+	}, [headerFooter, setHeaderState])
+
 	const { cartData, setCartState } = useCart()
 
 	const getChosenShippingMethod = () =>
@@ -405,6 +414,23 @@ const Checkout = () => {
 			<Script src={process.env.NEXT_PUBLIC_PF_SCRIPT} />
 		</Layout>
 	)
+}
+
+export const getStaticProps = async () => {
+	const categories = await getCategories({
+		per_page: 100,
+		hide_empty: true,
+		orderby: "name",
+		order: "asc",
+	})
+
+	const headerFooter = await getHeaderFooterData()
+
+	return {
+		props: {
+			headerFooter: { ...(headerFooter || {}), categories },
+		},
+	}
 }
 
 export default Checkout

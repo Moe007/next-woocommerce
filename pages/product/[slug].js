@@ -10,8 +10,17 @@ import Image from "next/image"
 import { useEffect, useState } from "react"
 import DOMPurify from "isomorphic-dompurify"
 import AddToCart from "@/components/cart/addToCart"
+import { useHeader } from "@/context/HeaderContext"
+import { getCategories } from "@/utils/category"
+import { getHeaderFooterData } from "@/utils/headerFooter"
 
-const Product = ({ product, preparedData, selectedAttrs: attrs }) => {
+const Product = ({ product, preparedData, selectedAttrs: attrs, headerFooter }) => {
+	const { setHeaderState } = useHeader()
+
+	useEffect(() => {
+		setHeaderState(headerFooter)
+	}, [headerFooter, setHeaderState])
+
 	const [selectedAttrs, setSelectedAttrs] = useState(attrs)
 
 	const [variation, setVariation] = useState(preparedData)
@@ -163,6 +172,13 @@ export const getStaticProps = async (ctx) => {
 		}
 	}
 
+	const categories = await getCategories({
+		per_page: 100,
+		hide_empty: true,
+		orderby: "name",
+		order: "asc",
+	})
+
 	const preparedData = prepProductData(product, product.default_attributes)
 	const { selectedAttrs } = preparedData
 
@@ -190,11 +206,14 @@ export const getStaticProps = async (ctx) => {
 
 	delete preparedData.selectedAttrs
 
+	const headerFooter = await getHeaderFooterData()
+
 	return {
 		props: {
 			product,
 			preparedData,
 			selectedAttrs,
+			headerFooter: { ...(headerFooter || {}), categories },
 		},
 		revalidate: 1,
 	}
