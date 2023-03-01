@@ -13,7 +13,7 @@ const Footer = ({ pageTitle }) => {
 
 	useEffect(() => {
 		if (headerData?.header) {
-			setDescription(headerData.header.siteDescription)
+			setDescription(decode(headerData.header.siteDescription))
 		}
 		if (headerData?.footer) {
 			const { footerMenuItems, socialLinks } = headerData.footer
