@@ -13,6 +13,8 @@ import AddToCart from "@/components/cart/addToCart"
 import { useHeader } from "@/context/HeaderContext"
 import { getCategories } from "@/utils/category"
 import { getHeaderFooterData } from "@/utils/headerFooter"
+import { NextSeo, ProductJsonLd } from "next-seo"
+import { useRouter } from "next/router"
 
 const Product = ({ product, preparedData, selectedAttrs: attrs, headerFooter }) => {
 	const { setHeaderState } = useHeader()
@@ -60,13 +62,51 @@ const Product = ({ product, preparedData, selectedAttrs: attrs, headerFooter }) 
 		setVariation(preparedData)
 	}, [product, selectedAttrs])
 
+	const router = useRouter()
+
+	if (router.isFallback) {
+		return (
+			<Layout pageTitle={"Loading"}>
+				<div className='flex h-full items-center justify-center'>
+					<p>Loading...</p>
+				</div>
+			</Layout>
+		)
+	}
 	return (
-		<Layout>
+		<Layout pageTitle={name}>
+			<NextSeo
+				description={description.replace(/<[^>]*>?/gm, "")}
+				canonical={`${process.env.NEXT_PUBLIC_HOME_URL}/products/${product.slug}`}
+				openGraph={{
+					url: `${process.env.NEXT_PUBLIC_HOME_URL}/products/${product.slug}`,
+					images: [
+						{
+							url: gallery[0]?.src || "/next.svg",
+							width: 300,
+							height: 400,
+							alt: gallery[0]?.alt || `Featured image of ${name}`,
+						},
+					],
+				}}
+			/>
 			<div className='flex flex-col items-center space-y-4 mt-4'>
 				<h1 className='text-3xl font-bold'>{name}</h1>
+				<ProductJsonLd
+					productName={name}
+					images={[gallery[0]?.src || "/next.svg"]}
+					description={description.replace(/<[^>]*>?/gm, "")}
+					offers={[
+						{
+							price: Number(price).toFixed(2),
+							priceCurrency: "ZAR",
+							availability: "https://schema.org/InStock",
+						},
+					]}
+				/>
 				<Image
-					alt={gallery[0].alt || `Image of ${name}`}
-					src={gallery[0].src}
+					alt={gallery[0]?.alt || `Image of ${name}`}
+					src={gallery[0]?.src || "/next.svg"}
 					width={300}
 					height={400}
 				/>
